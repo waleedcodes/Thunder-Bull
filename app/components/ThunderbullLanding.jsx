@@ -1,4 +1,5 @@
 "use client";
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 
 const ThunderbullLanding = () => {
@@ -8,9 +9,9 @@ const ThunderbullLanding = () => {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const energyCanvasRef = useRef(null);
+  const gifBackgroundRef = useRef(null);
 
   // Page load animation
-  // Mouse tracking for interactive effects
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true);
@@ -26,6 +27,308 @@ const ThunderbullLanding = () => {
     };
   }, []);
 
+  // Animated GIF-like Background Effect
+  useEffect(() => {
+    const canvas = gifBackgroundRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const animatedElements = [];
+    const pulseRings = [];
+    const energyWaves = [];
+    const floatingOrbs = [];
+
+    // Animated Pulse Rings (GIF-like effect)
+    class PulseRing {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = 0;
+        this.maxRadius = 50 + Math.random() * 100;
+        this.speed = 0.5 + Math.random() * 1;
+        this.opacity = 1;
+        this.color = Math.random() > 0.5 ? "#FFD700" : "#FFA500";
+        this.life = 0;
+        this.maxLife = 120;
+      }
+
+      update() {
+        this.life++;
+        this.radius += this.speed;
+        this.opacity = Math.max(0, 1 - this.radius / this.maxRadius);
+
+        if (this.life > this.maxLife) {
+          this.reset();
+        }
+      }
+
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = 0;
+        this.maxRadius = 50 + Math.random() * 100;
+        this.speed = 0.5 + Math.random() * 1;
+        this.opacity = 1;
+        this.color = Math.random() > 0.5 ? "#FFD700" : "#FFA500";
+        this.life = 0;
+      }
+
+      draw(ctx) {
+        if (this.radius <= 0) return;
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+
+        // Outer ring
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `${this.color}${Math.floor(this.opacity * 0.3 * 255)
+          .toString(16)
+          .padStart(2, "0")}`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Inner glow
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+        ctx.strokeStyle = `${this.color}${Math.floor(this.opacity * 0.6 * 255)
+          .toString(16)
+          .padStart(2, "0")}`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+
+    // Energy Waves (Animated like GIF)
+    class EnergyWave {
+      constructor() {
+        this.x = -50;
+        this.y = Math.random() * canvas.height;
+        this.width = 0;
+        this.height = 2 + Math.random() * 6;
+        this.speed = 2 + Math.random() * 4;
+        this.opacity = 0.8;
+        this.frequency = Math.random() * 0.02 + 0.01;
+        this.amplitude = 10 + Math.random() * 20;
+        this.time = 0;
+      }
+
+      update() {
+        this.x += this.speed;
+        this.time += 0.1;
+        this.width = Math.min(200 + Math.random() * 100, canvas.width - this.x);
+
+        if (this.x > canvas.width + 50) {
+          this.reset();
+        }
+      }
+
+      reset() {
+        this.x = -50;
+        this.y = Math.random() * canvas.height;
+        this.width = 0;
+        this.speed = 2 + Math.random() * 4;
+        this.time = 0;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+
+        const gradient = ctx.createLinearGradient(
+          this.x,
+          0,
+          this.x + this.width,
+          0
+        );
+        gradient.addColorStop(0, "rgba(255, 215, 0, 0)");
+        gradient.addColorStop(0.5, `rgba(255, 165, 0, ${this.opacity})`);
+        gradient.addColorStop(1, "rgba(255, 215, 0, 0)");
+
+        ctx.fillStyle = gradient;
+
+        // Create wavy effect
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+
+        for (let i = 0; i <= this.width; i += 5) {
+          const waveY =
+            this.y + Math.sin(i * this.frequency + this.time) * this.amplitude;
+          ctx.lineTo(this.x + i, waveY);
+        }
+
+        ctx.lineTo(this.x + this.width, this.y + this.height);
+
+        for (let i = this.width; i >= 0; i -= 5) {
+          const waveY =
+            this.y +
+            this.height +
+            Math.sin(i * this.frequency + this.time) * this.amplitude;
+          ctx.lineTo(this.x + i, waveY);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    // Floating Energy Orbs
+    class FloatingOrb {
+      constructor() {
+        this.reset();
+        this.baseSize = 3 + Math.random() * 8;
+        this.pulseSpeed = 0.05 + Math.random() * 0.05;
+        this.pulseOffset = Math.random() * Math.PI * 2;
+      }
+
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + 50;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = -1 - Math.random() * 2;
+        this.life = 0;
+        this.maxLife = 200 + Math.random() * 100;
+        this.color = Math.random() > 0.7 ? "#FFFF00" : "#FFA500";
+      }
+
+      update() {
+        this.life++;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Add some drift
+        this.vx += (Math.random() - 0.5) * 0.1;
+        this.vy += (Math.random() - 0.5) * 0.05;
+
+        // Boundaries
+        if (
+          this.x < 0 ||
+          this.x > canvas.width ||
+          this.y < -50 ||
+          this.life > this.maxLife
+        ) {
+          this.reset();
+        }
+      }
+
+      draw(ctx) {
+        const time = Date.now() * 0.001;
+        const pulseSize =
+          this.baseSize +
+          Math.sin(time * this.pulseSpeed + this.pulseOffset) * 2;
+        const opacity = Math.max(0, 1 - this.life / this.maxLife);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(
+          this.x,
+          this.y,
+          0,
+          this.x,
+          this.y,
+          pulseSize * 2
+        );
+        gradient.addColorStop(
+          0,
+          `${this.color}${Math.floor(opacity * 0.8 * 255)
+            .toString(16)
+            .padStart(2, "0")}`
+        );
+        gradient.addColorStop(
+          0.5,
+          `${this.color}${Math.floor(opacity * 0.4 * 255)
+            .toString(16)
+            .padStart(2, "0")}`
+        );
+        gradient.addColorStop(1, `${this.color}00`);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, pulseSize * 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core
+        ctx.fillStyle = `${this.color}${Math.floor(opacity * 255)
+          .toString(16)
+          .padStart(2, "0")}`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, pulseSize * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    // Initialize animated elements
+    for (let i = 0; i < 8; i++) {
+      pulseRings.push(new PulseRing());
+    }
+
+    for (let i = 0; i < 12; i++) {
+      energyWaves.push(new EnergyWave());
+    }
+
+    for (let i = 0; i < 25; i++) {
+      floatingOrbs.push(new FloatingOrb());
+    }
+
+    const animateGifBackground = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background gradient that pulses
+      const time = Date.now() * 0.001;
+      const pulseIntensity = 0.3 + Math.sin(time * 2) * 0.1;
+
+      const bgGradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        0,
+        canvas.width / 2,
+        canvas.height / 2,
+        Math.max(canvas.width, canvas.height)
+      );
+      bgGradient.addColorStop(0, `rgba(40, 20, 0, ${pulseIntensity})`);
+      bgGradient.addColorStop(0.5, `rgba(20, 10, 0, ${pulseIntensity * 0.7})`);
+      bgGradient.addColorStop(1, `rgba(10, 5, 0, ${pulseIntensity * 0.5})`);
+
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw all animated elements
+      pulseRings.forEach((ring) => {
+        ring.update();
+        ring.draw(ctx);
+      });
+
+      energyWaves.forEach((wave) => {
+        wave.update();
+        wave.draw(ctx);
+      });
+
+      floatingOrbs.forEach((orb) => {
+        orb.update();
+        orb.draw(ctx);
+      });
+
+      requestAnimationFrame(animateGifBackground);
+    };
+
+    animateGifBackground();
+
+    return () => {
+      // Cleanup handled by component unmount
+    };
+  }, []);
+
   // Real electrical energy effects
   useEffect(() => {
     if (!energyBurst) return;
@@ -38,7 +341,6 @@ const ThunderbullLanding = () => {
     canvas.height = window.innerHeight;
 
     const realLightning = [];
-    const electricArcs = [];
     const plasmaBalls = [];
     const staticDischarge = [];
 
@@ -383,7 +685,6 @@ const ThunderbullLanding = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Electromagnetic field distortion
-      const time = Date.now() * 0.001;
       ctx.save();
       ctx.globalCompositeOperation = "screen";
 
@@ -411,6 +712,7 @@ const ThunderbullLanding = () => {
 
     animateRealEnergy();
   }, [energyBurst]);
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({
@@ -532,6 +834,9 @@ const ThunderbullLanding = () => {
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
+      {/* GIF-like Animated Background */}
+      <canvas ref={gifBackgroundRef} className="absolute inset-0 z-0" />
+
       {/* Energy Burst Canvas - Only during load */}
       {energyBurst && (
         <canvas
@@ -546,31 +851,37 @@ const ThunderbullLanding = () => {
         className="absolute inset-0 pointer-events-none z-10"
       />
 
-      {/* Background Gradient */}
+      {/* Enhanced Background Gradient with Animation */}
       <div
-        className="absolute inset-0 opacity-80"
+        className="absolute inset-0 opacity-60 animate-pulse"
         style={{
           background: `
-            radial-gradient(circle at 30% 40%, rgba(255, 140, 0, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255, 200, 0, 0.2) 0%, transparent 50%),
-            linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(0, 0, 0, 1) 100%)
+            radial-gradient(circle at 30% 40%, rgba(255, 140, 0, 0.4) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(255, 200, 0, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 50% 80%, rgba(255, 165, 0, 0.2) 0%, transparent 40%),
+            linear-gradient(135deg, rgba(40, 20, 10, 0.9) 0%, rgba(0, 0, 0, 1) 100%)
           `,
+          animationDuration: "4s",
         }}
       />
 
-      {/* Animated Background Particles */}
-      <div className="absolute inset-0">
-        {[...Array(20)].map((_, i) => (
+      {/* Animated Background Particles - Enhanced for GIF effect */}
+      <div className="absolute inset-0 z-5">
+        {[...Array(30)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-yellow-400 opacity-20 animate-pulse"
+            className="absolute rounded-full bg-yellow-400 opacity-30"
             style={{
-              width: `${Math.random() * 4 + 1}px`,
-              height: `${Math.random() * 4 + 1}px`,
+              width: `${Math.random() * 6 + 2}px`,
+              height: `${Math.random() * 6 + 2}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
+              animation: `
+                float ${Math.random() * 4 + 2}s ease-in-out infinite,
+                pulse ${Math.random() * 3 + 1}s ease-in-out infinite alternate,
+                drift ${Math.random() * 8 + 5}s linear infinite
+              `,
               animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${Math.random() * 2 + 1}s`,
             }}
           />
         ))}
@@ -583,7 +894,7 @@ const ThunderbullLanding = () => {
         }`}
       >
         <div className="flex items-center space-x-4">
-          <div className="text-white text-xl">⚡</div>
+          <div className="text-white text-xl animate-pulse">⚡</div>
           <span className="text-white text-sm">Menu</span>
         </div>
 
@@ -591,7 +902,7 @@ const ThunderbullLanding = () => {
           Thunderbull
         </h1>
 
-        <button className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition-colors">
+        <button className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/50">
           ORDER
         </button>
       </nav>
@@ -610,11 +921,15 @@ const ThunderbullLanding = () => {
               transform: `translateX(${mousePosition.x * 10}px) translateY(${
                 mousePosition.y * 5
               }px)`,
+              textShadow:
+                "0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 165, 0, 0.3)",
             }}
           >
             Feel the
             <br />
-            <span className="text-yellow-400 text-7xl">Thunder</span>
+            <span className="text-yellow-400 text-7xl animate-pulse">
+              Thunder
+            </span>
           </h2>
 
           <p className="text-gray-300 text-lg mb-8 leading-relaxed">
@@ -623,12 +938,12 @@ const ThunderbullLanding = () => {
             meets unmatched energy.
           </p>
 
-          <button className="bg-transparent border-2 border-yellow-400 text-yellow-400 px-8 py-3 rounded-full font-semibold hover:bg-yellow-400 hover:text-black transition-all duration-300 transform hover:scale-105">
+          <button className="bg-transparent border-2 border-yellow-400 text-yellow-400 px-8 py-3 rounded-full font-semibold hover:bg-yellow-400 hover:text-black transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-400/50">
             ORDER
           </button>
         </div>
 
-        {/* Center Can */}
+        {/* Center Can - Enhanced with more dynamic effects */}
         <div className="flex-1 flex justify-center items-center relative">
           <div
             className={`relative transform transition-all duration-2000 delay-1000 ${
@@ -647,143 +962,11 @@ const ThunderbullLanding = () => {
               `,
             }}
           >
-            {/* Main Can */}
-            <div className="relative w-64 h-96 mx-auto">
-              {/* Can Body */}
-              <div
-                className="w-full h-full relative overflow-hidden"
-                style={{
-                  background: `
-                    linear-gradient(160deg, 
-                      #D4A574 0%,
-                      #F4D03F 15%,
-                      #F39C12 25%,
-                      #E67E22 40%,
-                      #D68910 55%,
-                      #F7DC6F 70%,
-                      #F1C40F 85%,
-                      #D4A574 100%
-                    )
-                  `,
-                  borderRadius: "20px 20px 25px 25px",
-                  boxShadow: `
-                    0 0 60px rgba(244, 208, 63, 0.6),
-                    inset -5px 0 20px rgba(0, 0, 0, 0.2),
-                    inset 5px 0 20px rgba(255, 255, 255, 0.1),
-                    0 25px 50px rgba(0, 0, 0, 0.7)
-                  `,
-                }}
-              >
-                {/* Can Top Rim */}
-                <div
-                  className="absolute top-0 left-2 right-2 h-6 rounded-t-lg"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #BDC3C7 0%, #ECF0F1 50%, #BDC3C7 100%)",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  }}
-                />
-
-                {/* Brand Text Area */}
-                <div className="absolute top-8 left-4 right-4 h-20 flex flex-col items-center justify-center">
-                  <div className="text-black font-bold text-xl tracking-wider opacity-80">
-                    THUNDERBULL
-                  </div>
-                  <div className="text-black text-xs font-semibold opacity-60 mt-1">
-                    ENERGY DRINK
-                  </div>
-                </div>
-
-                {/* Large Lightning Bolt Design */}
-                <div className="absolute top-32 left-1/2 transform -translate-x-1/2">
-                  <div
-                    className="w-20 h-40 opacity-70"
-                    style={{
-                      background: `
-                        linear-gradient(45deg, 
-                          rgba(0, 0, 0, 0.3) 0%,
-                          rgba(0, 0, 0, 0.1) 50%,
-                          rgba(0, 0, 0, 0.3) 100%
-                        )
-                      `,
-                      clipPath:
-                        "polygon(30% 0%, 70% 0%, 40% 40%, 80% 40%, 45% 100%, 20% 60%, 50% 60%)",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.3))",
-                    }}
-                  />
-                </div>
-
-                {/* Side Lightning Patterns */}
-                <div className="absolute top-20 left-2 w-8 h-24">
-                  <div
-                    className="w-full h-full opacity-50"
-                    style={{
-                      background: "rgba(0, 0, 0, 0.2)",
-                      clipPath:
-                        "polygon(20% 0%, 80% 30%, 30% 60%, 70% 100%, 10% 70%, 60% 40%)",
-                    }}
-                  />
-                </div>
-
-                <div className="absolute top-20 right-2 w-8 h-24">
-                  <div
-                    className="w-full h-full opacity-50"
-                    style={{
-                      background: "rgba(0, 0, 0, 0.2)",
-                      clipPath:
-                        "polygon(80% 0%, 20% 30%, 70% 60%, 30% 100%, 90% 70%, 40% 40%)",
-                    }}
-                  />
-                </div>
-
-                {/* Metallic Shine Effect */}
-                <div
-                  className="absolute left-6 top-12 w-6 h-60 opacity-40 rounded-full"
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.1) 70%, rgba(255,255,255,0.4) 100%)",
-                    transform: "skew(-5deg)",
-                    filter: "blur(1px)",
-                  }}
-                />
-
-                {/* Bottom Text Area */}
-                <div className="absolute bottom-8 left-4 right-4 h-12 flex flex-col items-center justify-center">
-                  <div className="text-black text-xs font-bold opacity-60">
-                    250ML
-                  </div>
-                  <div className="text-black text-xs opacity-50 mt-1">
-                    PREMIUM ENERGY
-                  </div>
-                </div>
-
-                {/* Embossed Ring Details */}
-                <div className="absolute top-28 left-2 right-2 h-1 bg-black opacity-20 rounded-full"></div>
-                <div className="absolute bottom-20 left-2 right-2 h-1 bg-black opacity-20 rounded-full"></div>
-              </div>
-
-              {/* Glow Effect */}
-              <div
-                className={`absolute inset-0 rounded-lg transition-all duration-1000 ${
-                  isLoaded ? "animate-pulse" : ""
-                }`}
-              >
-                <div
-                  className="w-full h-full"
-                  style={{
-                    background: `
-                      radial-gradient(ellipse at center, 
-                        rgba(244, 208, 63, ${isLoaded ? "0.4" : "0.8"}) 0%, 
-                        rgba(243, 156, 18, 0.2) 40%,
-                        transparent 70%
-                      )
-                    `,
-                    borderRadius: "20px 20px 25px 25px",
-                    filter: "blur(3px)",
-                  }}
-                />
-              </div>
-            </div>
+            <img
+              src="/frame_1.png"
+              alt="Thunderbull Can"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 
@@ -793,16 +976,16 @@ const ThunderbullLanding = () => {
             isLoaded ? "opacity-100 translate-x-0" : "opacity-0 translate-x-20"
           }`}
         >
-          {/* Price Tag */}
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-full font-bold flex items-center space-x-2">
+          {/* Price Tag - Enhanced */}
+          <div className="bg-yellow-400 text-black px-4 py-2 rounded-full font-bold flex items-center space-x-2 animate-bounce hover:scale-105 transition-transform duration-300 shadow-lg shadow-yellow-400/50">
             <span>💰</span>
             <span>5.2kr</span>
           </div>
 
-          {/* Product Thumbnail */}
-          <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-yellow-400">
+          {/* Product Thumbnail - Enhanced */}
+          <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-yellow-400 hover:border-yellow-300 transition-colors duration-300 hover:scale-105 transform hover:shadow-lg hover:shadow-yellow-400/50">
             <div
-              className="w-full h-full"
+              className="w-full h-full animate-pulse"
               style={{
                 background: `
                   linear-gradient(160deg, 
@@ -813,17 +996,20 @@ const ThunderbullLanding = () => {
                     #D4A574 100%
                   )
                 `,
+                animationDuration: "3s",
               }}
             />
           </div>
 
-          {/* Navigation Dots */}
+          {/* Navigation Dots - Enhanced */}
           <div className="flex flex-col space-y-2">
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className={`w-2 h-2 rounded-full ${
-                  i === 0 ? "bg-yellow-400" : "bg-gray-600"
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  i === 0
+                    ? "bg-yellow-400 animate-pulse scale-125"
+                    : "bg-gray-600 hover:bg-gray-500"
                 }`}
               />
             ))}
@@ -831,30 +1017,67 @@ const ThunderbullLanding = () => {
         </div>
       </div>
 
-      {/* Floating Elements */}
+      {/* Enhanced Floating Elements */}
       <div
-        className={`absolute top-1/3 left-1/4 w-2 h-2 bg-yellow-400 rounded-full transition-all duration-2000 delay-1500 ${
-          isLoaded ? "animate-bounce opacity-60" : "opacity-0"
+        className={`absolute top-1/3 left-1/4 w-3 h-3 bg-yellow-400 rounded-full transition-all duration-2000 delay-1500 ${
+          isLoaded ? "animate-bounce opacity-80" : "opacity-0"
         }`}
-        style={{ animationDelay: "1s" }}
+        style={{
+          animationDelay: "1s",
+          boxShadow: "0 0 10px rgba(255, 215, 0, 0.8)",
+        }}
       />
       <div
-        className={`absolute top-2/3 right-1/3 w-1 h-1 bg-white rounded-full transition-all duration-2000 delay-1700 ${
-          isLoaded ? "animate-ping opacity-40" : "opacity-0"
+        className={`absolute top-2/3 right-1/3 w-2 h-2 bg-white rounded-full transition-all duration-2000 delay-1700 ${
+          isLoaded ? "animate-ping opacity-60" : "opacity-0"
         }`}
-        style={{ animationDelay: "2s" }}
+        style={{
+          animationDelay: "2s",
+          boxShadow: "0 0 8px rgba(255, 255, 255, 0.6)",
+        }}
       />
       <div
-        className={`absolute top-1/2 left-3/4 w-3 h-3 bg-yellow-300 rounded-full transition-all duration-2000 delay-1900 ${
-          isLoaded ? "animate-pulse opacity-50" : "opacity-0"
+        className={`absolute top-1/2 left-3/4 w-4 h-4 bg-yellow-300 rounded-full transition-all duration-2000 delay-1900 ${
+          isLoaded ? "animate-pulse opacity-70" : "opacity-0"
         }`}
-        style={{ animationDelay: "0.5s" }}
+        style={{
+          animationDelay: "0.5s",
+          boxShadow: "0 0 12px rgba(255, 255, 0, 0.7)",
+        }}
       />
 
-      {/* Screen Flash Effect for Energy Burst */}
+      {/* Screen Flash Effect for Energy Burst - Enhanced */}
       {energyBurst && (
-        <div className="absolute inset-0 z-40 bg-yellow-400 opacity-20 animate-pulse pointer-events-none" />
+        <div
+          className="absolute inset-0 z-40 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 opacity-30 animate-pulse pointer-events-none"
+          style={{ animationDuration: "0.5s" }}
+        />
       )}
+
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(180deg);
+          }
+        }
+
+        @keyframes drift {
+          0% {
+            transform: translateX(0px);
+          }
+          100% {
+            transform: translateX(100px);
+          }
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
