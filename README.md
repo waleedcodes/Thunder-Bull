@@ -2,6 +2,11 @@
 
 # Thunderbull Landing Page Project
 
+> **Project Demo Video**  
+> [![Thunderbull Landing Page Demo](public/demo-video.mov)](public/demo-video.mov)
+>
+> _Click the image above to watch the demo video._
+
 This is a Next.js project featuring an animated energy drink landing page with:
 
 - Smooth entrance animations on page load
